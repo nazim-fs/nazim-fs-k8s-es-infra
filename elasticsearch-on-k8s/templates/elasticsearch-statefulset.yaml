@@ -1,0 +1,53 @@
+# Statefulset configuration to deploy Elasticsearch pods
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-elasticsearch
+spec:
+  replicas: {{ .Values.replicaCount }}
+  serviceName: {{ .Release.Name }}-elasticsearch
+  selector:
+    matchLabels:
+      app: {{ .Values.elasticsearch.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.elasticsearch.appName }}
+    spec:
+      containers:
+      - name: elasticsearch
+        image: "{{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.elasticsearch.ports.http }}
+        - containerPort: {{ .Values.elasticsearch.ports.transport }}
+        resources:
+          requests:
+            memory: "{{ .Values.elasticsearch.resources.requests.memory }}"
+            cpu: "{{ .Values.elasticsearch.resources.requests.cpu }}"
+          limits:
+            memory: "{{ .Values.elasticsearch.resources.limits.memory }}"
+            cpu: "{{ .Values.elasticsearch.resources.limits.cpu }}"
+        volumeMounts:
+        - name: data
+          mountPath: {{ .Values.elasticsearch.volumeMounts.mountPath }}
+        - name: config
+          mountPath: /usr/share/elasticsearch/config
+        livenessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: {{ .Values.elasticsearch.ports.http }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: {{ .Values.elasticsearch.ports.http }}
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: config
+        configMap:
+          name: {{ .Release.Name }}-elasticsearch-config
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-elasticsearch-data

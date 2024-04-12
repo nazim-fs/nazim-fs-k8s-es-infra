@@ -1,0 +1,82 @@
+# Number of ES nodes (pods) deployed on the cluster
+replicaCount: 3
+
+# Elasticsearch specific configurations
+elasticsearch:
+  clusterName: elasticsearch-on-k8s
+  image:
+    repository: docker.elastic.co/elasticsearch/elasticsearch
+    tag: 7.15.2
+    pullPolicy: IfNotPresent
+  ports:
+    http: 9200
+    transport: 9300
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "1"
+    limits:
+      memory: "4Gi"
+      cpu: "2"
+  storage:
+    size: 10Gi
+    className: gp2
+  volumeMounts:
+    mountPath: /usr/share/elasticsearch/data
+  appName: elasticsearch
+  serviceAccount:
+    name: default
+
+# Prometheus specific configurations
+prometheus:
+  enabled: true
+  server:
+    persistentVolume:
+      enabled: false
+    serviceMonitor:
+      enabled: false
+    remoteWrite:
+      - url: "http://prometheus-elasticsearch-exporter:9114/write"
+    remoteRead:
+      - url: "http://prometheus-elasticsearch-exporter:9114/read"
+    scrapeInterval: 15s
+    scrapeTimeout: 10s
+    retention: 6h
+    evaluationInterval: 15s
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets: []
+    scrape_configs:
+      - job_name: 'elasticsearch'
+        static_configs:
+          - targets: ['elasticsearch-on-k8s:9200'] # This assumes that Elastisearch cluster is deployed in the same namespace and onto the same cluster. Change this if this is not the case
+
+# Grafana specific configurations
+grafana:
+  enabled: true
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          orgId: 1
+          url: http://prometheus-server.default.svc.cluster.local
+          version: 1
+          editable: true
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: default
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+

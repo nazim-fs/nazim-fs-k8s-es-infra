@@ -1,0 +1,48 @@
+# RBAC configuration to control access to cluster components
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Name }}-elasticsearch-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Release.Name }}-elasticsearch-read-access
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.elasticsearch.serviceAccount.name }}
+roleRef:
+  kind: Role
+  name: {{ .Release.Name }}-elasticsearch-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-elasticsearch-admin
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps", "persistentvolumeclaims"]
+  verbs: ["get", "list", "create", "delete", "update", "patch", "watch"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-elasticsearch-admin-binding
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.elasticsearch.serviceAccount.name }}
+roleRef:
+  kind: ClusterRole
+  name: {{ .Release.Name }}-elasticsearch-admin
+  apiGroup: rbac.authorization.k8s.io

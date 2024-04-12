@@ -1,0 +1,18 @@
+# Configmap to store Elasticsearch cluster configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-elasticsearch-config
+data:
+  elasticsearch.yml: |-
+    cluster.name: {{ .Values.elasticsearch.clusterName }}
+    node.name: elasticsearch-on-k8s
+    network.host: 0.0.0.0
+    discovery.seed_hosts: "{{ .Release.Name }}-elasticsearch-0.{{ .Release.Name }}-elasticsearch-headless,{{ .Release.Name }}-elasticsearch-1.{{ .Release.Name }}-elasticsearch-headless,{{ .Release.Name }}-elasticsearch-2.{{ .Release.Name }}-elasticsearch-headless"
+    cluster.initial_master_nodes: ["{{ .Release.Name }}-elasticsearch-0","{{ .Release.Name }}-elasticsearch-1","{{ .Release.Name }}-elasticsearch-2"]
+    discovery.type: single-node
+    node.master: true
+    node.data: true
+    node.ingest: true
+    index.number_of_shards: 3
+    index.number_of_replicas: 1

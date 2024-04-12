@@ -1,0 +1,15 @@
+# Service configuration to deploy Elasticsearch service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-elasticsearch
+spec:
+  selector:
+    app: {{ .Values.elasticsearch.appName }}
+  ports:
+  - name: http
+    port: {{ .Values.elasticsearch.ports.http }}
+    targetPort: {{ .Values.elasticsearch.ports.http }}
+  - name: transport
+    port: {{ .Values.elasticsearch.ports.transport }}
+    targetPort: {{ .Values.elasticsearch.ports.transport }}
