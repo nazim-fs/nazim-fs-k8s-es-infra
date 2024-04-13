@@ -17,6 +17,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.elasticsearch.serviceAccount.name }}
+  namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
   name: {{ .Release.Name }}-elasticsearch-reader
@@ -27,7 +28,7 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .Release.Name }}-elasticsearch-admin
+  name: {{ .Release.Name }}-elasticsearch-clusterrole
 rules:
 - apiGroups: [""]
   resources: ["pods", "services", "configmaps", "persistentvolumeclaims"]
@@ -38,10 +39,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ .Release.Name }}-elasticsearch-admin-binding
+  name: {{ .Release.Name }}-elasticsearch-clusterrolebinding
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.elasticsearch.serviceAccount.name }}
+  namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
   name: {{ .Release.Name }}-elasticsearch-admin

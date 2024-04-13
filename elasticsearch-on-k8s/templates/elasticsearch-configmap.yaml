@@ -4,7 +4,7 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-elasticsearch-config
 data:
-  elasticsearch.yml: |-
+  elasticsearch.yml: |
     cluster.name: {{ .Values.elasticsearch.clusterName }}
     node.name: elasticsearch-on-k8s
     network.host: 0.0.0.0
@@ -16,3 +16,6 @@ data:
     node.ingest: true
     index.number_of_shards: 3
     index.number_of_replicas: 1
+  jvm.options: |
+    -Xms1g
+    -Xmx1g
