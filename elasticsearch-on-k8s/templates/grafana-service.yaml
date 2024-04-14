@@ -1,0 +1,13 @@
+# Service configuration to allow Grafana dashboard accessibility
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-grafana-lb
+spec:
+  type: LoadBalancer
+  selector:
+    app: elasticsearch-grafana
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000

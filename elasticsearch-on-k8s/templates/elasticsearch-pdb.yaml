@@ -1,0 +1,10 @@
+# Pod disruption budget to handle resiliency
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-elasticsearch-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: {{ .Values.elasticsearch.appName }}

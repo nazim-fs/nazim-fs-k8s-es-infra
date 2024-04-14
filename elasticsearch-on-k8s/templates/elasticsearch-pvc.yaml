@@ -1,0 +1,12 @@
+# PVC configuration for Elasicsearch storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-elasticsearch-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.elasticsearch.storage.size }}
+  storageClassName: {{ .Values.elasticsearch.storage.className }}

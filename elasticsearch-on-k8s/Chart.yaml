@@ -1,0 +1,6 @@
+apiVersion: v2
+name: elasticsearch-on-k8s
+description: A Helm chart for deploying Elasticsearch cluster on Kubernetes. It also deploys Prometheus, and Grafana for Monitoring & observability.
+version: 1.0.0
+appVersion: 1.0.0
+
