@@ -18,6 +18,9 @@ spec:
     - podSelector:
         matchLabels:
           app: grafana
+    - podSelector:
+        matchLabels:
+          app: {{ .Values.elasticsearch.appName }}
     ports:
     - protocol: TCP
       port: {{ .Values.elasticsearch.ports.http }}
@@ -25,6 +28,12 @@ spec:
       port: {{ .Values.elasticsearch.ports.transport }}
   egress:
   - to:
+    - podSelector:
+        matchLabels:
+          app: prometheus
+    - podSelector:
+        matchLabels:
+          app: grafana
     - podSelector:
         matchLabels:
           app: {{ .Values.elasticsearch.appName }}
