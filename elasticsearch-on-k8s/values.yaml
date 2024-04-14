@@ -1,12 +1,18 @@
 # Number of ES nodes (pods) deployed on the cluster
 replicaCount: 3
 
+# initContainers specific configurations
+initContainers:
+  repository: busybox
+  tag: latest
+  pullPolicy: Always
+
 # Elasticsearch specific configurations
 elasticsearch:
   clusterName: elasticsearch-on-k8s
   image:
     repository: docker.elastic.co/elasticsearch/elasticsearch
-    tag: 7.17.10
+    tag: 8.13.2
     pullPolicy: IfNotPresent
   ports:
     http: 9200

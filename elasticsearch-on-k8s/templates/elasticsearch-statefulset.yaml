@@ -14,9 +14,34 @@ spec:
       labels:
         app: {{ .Values.elasticsearch.appName }}
     spec:
+      securityContext:  # Add securityContext for the container
+        fsGroup: 1000
+      initContainers:
+      - name: init-fix-permissions-data
+        image:  "{{ .Values.initContainers.repository }}:{{ .Values.initContainers.tag }}"
+        imagePullPolicy: {{ .Values.initContainers.pullPolicy | quote }}
+        command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: data
+          mountPath: {{ .Values.elasticsearch.volumeMounts.mountPath }}
+      - name: init-vm-max-map
+        image: "{{ .Values.initContainers.repository }}:{{ .Values.initContainers.tag }}"
+        imagePullPolicy: {{ .Values.initContainers.pullPolicy | quote }}
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
+      - name: init-increase-fd-ulimit
+        image:  "{{ .Values.initContainers.repository }}:{{ .Values.initContainers.tag }}"
+        imagePullPolicy: {{ .Values.initContainers.pullPolicy | quote }}
+        command: ["sh", "-c", "ulimit -n 65536"]
+        securityContext:
+          privileged: true
       containers:
       - name: elasticsearch
         image: "{{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}"
+        imagePullPolicy: {{ .Values.elasticsearch.image.pullPolicy | quote }}
         ports:
         - containerPort: {{ .Values.elasticsearch.ports.http }}
         - containerPort: {{ .Values.elasticsearch.ports.transport }}
@@ -27,11 +52,29 @@ spec:
           limits:
             memory: "{{ .Values.elasticsearch.resources.limits.memory }}"
             cpu: "{{ .Values.elasticsearch.resources.limits.cpu }}"
+        env:
+        - name: CLUSTER_NAME
+          value: "{{ .Values.elasticsearch.clusterName }}"
+        - name: PROCESSORS
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
+        - name: ES_JAVA_OPTS
+          value: -Xms512m -Xmx512m
+        - name: ES_PATH_CONF
+          value: "/usr/share/elasticsearch/config"
+        - name: "ES_PLUGINS_INSTALL"
+          value: "mapper-size"
         volumeMounts:
         - name: data
-          mountPath: {{ .Values.elasticsearch.volumeMounts.mountPath }}
+          mountPath: "{{ .Values.elasticsearch.volumeMounts.mountPath }}/{{ .Release.Name }}-elasticsearch-$(hostname)"
+          subPath: $(hostname)
+          readOnly: false
         - name: config
-          mountPath: /usr/share/elasticsearch/config
+          mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          subPath: elasticsearch.yml
+        securityContext:
+          privileged: true
         livenessProbe:
           httpGet:
             path: /_cluster/health
@@ -45,9 +88,9 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 5
       volumes:
-      - name: config
-        configMap:
-          name: {{ .Release.Name }}-elasticsearch-config
       - name: data
         persistentVolumeClaim:
           claimName: {{ .Release.Name }}-elasticsearch-data
+      - name: config
+        configMap:
+          name: {{ .Release.Name }}-elasticsearch-config
