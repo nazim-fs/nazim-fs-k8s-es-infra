@@ -29,5 +29,4 @@ retrieve:
 destroy:
 	@read -p "Enter Release name: " release; \
 	read -p "Enter namespace: " namespace; \
-	helm uninstall $$release --namespace $$namespace \
-	kubectl delete namespace $$namespace
+	helm uninstall $$release --namespace $$namespace && kubectl delete namespace $$namespace
