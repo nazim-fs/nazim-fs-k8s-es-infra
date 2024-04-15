@@ -13,5 +13,4 @@ data:
     xpack.security.transport.ssl.enabled: "false"
     xpack.security.transport.ssl.verification_mode: none
 
-    xpack.monitoring.enabled: "true"
     xpack.monitoring.collection.enabled: "true"

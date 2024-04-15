@@ -40,7 +40,7 @@ elasticsearch:
         memory: "2Gi"
         cpu: "1"
   storage:
-    size: 5Gi
+    size: 10Gi
     className: gp2 # This assumes Storage class used is gp2 on EKS. Update this if this is otherwise
   volumeMounts:
     mountPath: /usr/share/elasticsearch/data

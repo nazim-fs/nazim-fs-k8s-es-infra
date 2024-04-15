@@ -47,7 +47,8 @@ Below, we detail the necessary implementations to address each consideration eff
 
 ## Monitoring & Observability:
 
-- Utilized Prometheus and Grafana within the cluster to monitor Elasticsearch functionality and performance effectively.
+- By enabling `xpack.monitoring.collection.enabled` in the Elasticsearch configuration (`elasticsearch.yaml`), monitoring data collection is activated. This allows Elasticsearch to gather various metrics and statistics about the health, performance, and usage of the Elasticsearch cluster.
+- The collected monitoring data is indexed into an internal Elasticsearch index named `.monitoring-*`, enabling easy retrieval and visualization of cluster metrics over time.
 
 
 ## Possible Future Improvements:
@@ -57,6 +58,7 @@ Below, we detail the necessary implementations to address each consideration eff
 - Implementing snapshots and backups of Elasticsearch indices to an external storage solution for data durability and disaster recovery.
 - Implementing horizontal pod autoscaling (HPA) to optimize resource usage and reduce costs.
 - Deploying Elasticsearch clusters across different Kubernetes clusters or cloud providers for redundancy and availability.
+- Enabling integration with Prometheus and Grafana to further enhance monitoring and observability. This integration provides advanced monitoring capabilities and customizable dashboards for in-depth analysis of Elasticsearch metrics.
 - Implementing centralized logging using tools like Elasticsearch, Fluentd, and Kibana (EFK stack) or Elasticsearch, Logstash, and Kibana (ELK stack) to collect, store, and analyze logs for enhanced monitoring and troubleshooting.
 
 Each of these improvements addresses critical aspects of deploying Elasticsearch with Kubernetes, enhancing reliability, security, scalability, and manageability.
