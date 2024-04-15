@@ -1,6 +1,6 @@
 # Introduction:
 
-This document outlines key decisions made during the design and implementation phases of the solution. Considerations were made to ensure a robust architecture with operational excellence across various dimensions:
+This document outlines key decisions made during the design and implementation phases of the solution. Following considerations were made to ensure a robust architecture with operational excellence across various dimensions:
 
 - High Availability, Fault Tolerance & Resilience
 - Security
@@ -12,7 +12,7 @@ This document outlines key decisions made during the design and implementation p
 Below, we detail the necessary implementations to address each consideration effectively:
 
 
-## High Availability, Fault Tolerance & Resilience::
+## High Availability, Fault Tolerance & Resilience:
 
 - Deploying Elasticsearch in a StatefulSet with multiple replicas ensures high availability, allowing Kubernetes to manage pod rescheduling and maintain cluster stability during node failures.
 - Health checks, including readiness and liveness probes, are configured to monitor pod health and automatically restart unresponsive instances, enhancing fault tolerance and resilience.
