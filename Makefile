@@ -4,7 +4,7 @@ deploy:
 	read -p "Enter namespace: " namespace; \
 	helm install $$release elasticsearch-on-k8s/ --namespace $$namespace --create-namespace
 
-# Make target to retrieve Helm label, get elasticsearch service IP, and test cluster health by running curl request against it:
+# Make target to retrieve elasticsearch Master IP, and test cluster health by running curl request against it:
 test:
 	@read -p "Enter Release name: " release; \
 	read -p "Enter namespace: " namespace; \
