@@ -6,12 +6,11 @@ metadata:
 data:
   elasticsearch.yml: |-
     cluster.name: {{ .Values.elasticsearch.clusterName }}
-    node.name: elasticsearch-on-k8s
     network.host: 0.0.0.0
-    node.roles: [ master, data, ingest ]
-    discovery.type: single-node
 
     xpack.security.enabled: "false"
     xpack.security.http.ssl.enabled: "false"
     xpack.security.transport.ssl.enabled: "false"
     xpack.security.transport.ssl.verification_mode: none
+
+    xpack.monitoring.collection.enabled: "true"

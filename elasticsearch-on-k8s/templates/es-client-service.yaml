@@ -1,0 +1,16 @@
+# Service configuration to deploy Elasticsearch service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-es-client
+  labels:
+    app: {{ .Values.elasticsearch.appName }}-es-client
+spec:
+  selector:
+    app: {{ .Values.elasticsearch.appName }}-es-client
+  ports:
+  - name: http
+    port: 80
+    targetPort: {{ .Values.elasticsearch.ports.http }}
+    protocol: TCP
+  type: LoadBalancer

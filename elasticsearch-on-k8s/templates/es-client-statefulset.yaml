@@ -1,0 +1,94 @@
+# Statefulset configuration to deploy Elasticsearch client pods
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-es-client
+spec:
+  replicas: {{ .Values.replicaCount }}
+  serviceName: {{ .Release.Name }}-es-client
+  selector:
+    matchLabels:
+      app: {{ .Values.elasticsearch.appName }}-es-client
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.elasticsearch.appName }}-es-client
+    spec:
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+      - name: init-vm-max-map
+        image: "{{ .Values.initContainers.repository }}:{{ .Values.initContainers.tag }}"
+        imagePullPolicy: {{ .Values.initContainers.pullPolicy | quote }}
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
+      - name: init-increase-fd-ulimit
+        image:  "{{ .Values.initContainers.repository }}:{{ .Values.initContainers.tag }}"
+        imagePullPolicy: {{ .Values.initContainers.pullPolicy | quote }}
+        command: ["sh", "-c", "ulimit -n 65536"]
+        securityContext:
+          privileged: true
+      containers:
+      - name: es-client
+        image: "{{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}"
+        imagePullPolicy: {{ .Values.elasticsearch.image.pullPolicy | quote }}
+        ports:
+        - containerPort: {{ .Values.elasticsearch.ports.http }}
+        - containerPort: {{ .Values.elasticsearch.ports.transport }}
+        resources:
+          requests:
+            memory: "{{ .Values.elasticsearch.resources.client.requests.memory }}"
+            cpu: "{{ .Values.elasticsearch.resources.client.requests.cpu }}"
+          limits:
+            memory: "{{ .Values.elasticsearch.resources.client.limits.memory }}"
+            cpu: "{{ .Values.elasticsearch.resources.client.limits.cpu }}"
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: node.name
+          value: "{{ .Release.Name }}-es-client.{{ .Release.Namespace }}.svc.cluster.local"
+        - name: network.host
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: node.roles
+          value: remote_cluster_client
+        - name: cluster.initial_master_nodes
+          value: "{{ .Release.Name }}-es-master.{{ .Release.Namespace }}.svc.cluster.local"
+        - name: discovery.seed_hosts
+          value: "{{ .Release.Name }}-es-master.{{ .Release.Namespace }}.svc.cluster.local"
+        - name: PROCESSORS
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
+        - name: ES_JAVA_OPTS
+          value: -Xms512m -Xmx512m
+        - name: ES_PATH_CONF
+          value: "/usr/share/elasticsearch/config"
+        - name: "ES_PLUGINS_INSTALL"
+          value: "mapper-size"
+        volumeMounts:
+        - name: config
+          mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          subPath: elasticsearch.yml
+        securityContext:
+          privileged: true
+        livenessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: {{ .Values.elasticsearch.ports.http }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: {{ .Values.elasticsearch.ports.http }}
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: config
+        configMap:
+          name: {{ .Release.Name }}-elasticsearch-config
