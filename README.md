@@ -40,7 +40,7 @@ To successfully deploy the Elasticsearch cluster, the following pre-requisites m
 
 ## Diagram:
 
-
+![Cluster Architecture Diagram](Cluster_Diagram.png)
 
 
 ## Deployment Procedure:
