@@ -1,11 +1,11 @@
-# Statefulset configuration to deploy Elasticsearch pods
+# Statefulset configuration to deploy Elasticsearch master pods
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ .Release.Name }}-elasticsearch
+  name: {{ .Release.Name }}-es-master
 spec:
   replicas: {{ .Values.replicaCount }}
-  serviceName: {{ .Release.Name }}-elasticsearch
+  serviceName: {{ .Release.Name }}-es-master
   selector:
     matchLabels:
       app: {{ .Values.elasticsearch.appName }}
@@ -14,18 +14,9 @@ spec:
       labels:
         app: {{ .Values.elasticsearch.appName }}
     spec:
-      securityContext:  # Add securityContext for the container
+      securityContext:
         fsGroup: 1000
       initContainers:
-      - name: init-fix-permissions-data
-        image:  "{{ .Values.initContainers.repository }}:{{ .Values.initContainers.tag }}"
-        imagePullPolicy: {{ .Values.initContainers.pullPolicy | quote }}
-        command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data"]
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: data
-          mountPath: {{ .Values.elasticsearch.volumeMounts.mountPath }}
       - name: init-vm-max-map
         image: "{{ .Values.initContainers.repository }}:{{ .Values.initContainers.tag }}"
         imagePullPolicy: {{ .Values.initContainers.pullPolicy | quote }}
@@ -39,7 +30,7 @@ spec:
         securityContext:
           privileged: true
       containers:
-      - name: elasticsearch
+      - name: es-master
         image: "{{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}"
         imagePullPolicy: {{ .Values.elasticsearch.image.pullPolicy | quote }}
         ports:
@@ -47,14 +38,28 @@ spec:
         - containerPort: {{ .Values.elasticsearch.ports.transport }}
         resources:
           requests:
-            memory: "{{ .Values.elasticsearch.resources.requests.memory }}"
-            cpu: "{{ .Values.elasticsearch.resources.requests.cpu }}"
+            memory: "{{ .Values.elasticsearch.resources.master.requests.memory }}"
+            cpu: "{{ .Values.elasticsearch.resources.master.requests.cpu }}"
           limits:
-            memory: "{{ .Values.elasticsearch.resources.limits.memory }}"
-            cpu: "{{ .Values.elasticsearch.resources.limits.cpu }}"
+            memory: "{{ .Values.elasticsearch.resources.master.limits.memory }}"
+            cpu: "{{ .Values.elasticsearch.resources.master.limits.cpu }}"
         env:
-        - name: CLUSTER_NAME
-          value: "{{ .Values.elasticsearch.clusterName }}"
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: node.name
+          value: "{{ .Release.Name }}-es-master.{{ .Release.Namespace }}.svc.cluster.local"
+        - name: network.host
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: node.roles
+          value: master
+        - name: cluster.initial_master_nodes
+          value: "{{ .Release.Name }}-es-master.{{ .Release.Namespace }}.svc.cluster.local"
+        - name: discovery.seed_hosts
+          value: "{{ .Release.Name }}-es-master.{{ .Release.Namespace }}.svc.cluster.local"
         - name: PROCESSORS
           valueFrom:
             resourceFieldRef:
@@ -66,10 +71,6 @@ spec:
         - name: "ES_PLUGINS_INSTALL"
           value: "mapper-size"
         volumeMounts:
-        - name: data
-          mountPath: "{{ .Values.elasticsearch.volumeMounts.mountPath }}/{{ .Release.Name }}-elasticsearch-$(hostname)"
-          subPath: $(hostname)
-          readOnly: false
         - name: config
           mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
           subPath: elasticsearch.yml
@@ -88,9 +89,6 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 5
       volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: {{ .Release.Name }}-elasticsearch-data
       - name: config
         configMap:
           name: {{ .Release.Name }}-elasticsearch-config

@@ -18,14 +18,29 @@ elasticsearch:
     http: 9200
     transport: 9300
   resources:
-    requests:
-      memory: "2Gi"
-      cpu: "1"
-    limits:
-      memory: "4Gi"
-      cpu: "2"
+    master:
+      requests:
+        memory: "2Gi"
+        cpu: "1"
+      limits:
+        memory: "4Gi"
+        cpu: "2"
+    client:
+      requests:
+        memory: "1Gi"
+        cpu: "0.5"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+    data:
+      requests:
+        memory: "1Gi"
+        cpu: "0.5"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
   storage:
-    size: 10Gi
+    size: 5Gi
     className: gp2 # This assumes Storage class used is gp2 on EKS. Update this if this is otherwise
   volumeMounts:
     mountPath: /usr/share/elasticsearch/data

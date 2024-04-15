@@ -21,6 +21,9 @@ spec:
     - podSelector:
         matchLabels:
           app: {{ .Values.elasticsearch.appName }}
+    - podSelector:
+        matchLabels:
+          app: {{ .Values.elasticsearch.appName }}-es-client
     ports:
     - protocol: TCP
       port: {{ .Values.elasticsearch.ports.http }}
@@ -37,6 +40,9 @@ spec:
     - podSelector:
         matchLabels:
           app: {{ .Values.elasticsearch.appName }}
+    - podSelector:
+        matchLabels:
+          app: {{ .Values.elasticsearch.appName }}-es-client
     ports:
     - protocol: TCP
       port: {{ .Values.elasticsearch.ports.http }}
