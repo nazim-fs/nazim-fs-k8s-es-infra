@@ -55,7 +55,7 @@ Ensure access to the cluster and adequate permissions to create/update/delete th
 namespace, statefulset, service, pvc, configmap, roles, rolebinding, clusterrole, clusterrolebinding, netpol, pdb
 ```
 
-Carefully review and adjust the values in `values.yaml` as per requirements. Execute the following command to deploy Elasticsearch onto the cluster:
+Carefully review and adjust the values in `values.yaml` as per requirements. Execute the following command to deploy Elasticsearch onto the cluster: [Note that you need to specify appropriate `release-name` and `namespace` values as shown below for example]
 ```
 $ make deploy
 Enter Release name: es-cluster
@@ -66,7 +66,7 @@ Allow at least 5 minutes for the configuration process to complete. Once finishe
 ```
 kubectl -n <namespace> get all,pvc,cm,netpol,pdb
 ```
-Replace <namespace> with the appropriate value.
+Replace `<namespace>` with the appropriate value.
 
 
 ## Testing Procedure:
@@ -128,6 +128,7 @@ Warning  Unhealthy               20m (x6 over 20m)  kubelet                  Rea
 Warning  Unhealthy               20m                kubelet                  Liveness probe failed: Get "http://10.0.2.7:9200/_cluster/health": dial tcp 10.0.2.7:9200: connect: connection refused
 ```
 - There is also a room for future improvements to the Makefile for dynamic retrieval of `Release Name` and `namespace` values.
+- At last, the future improvements surrounding cluster reliability, security, scalability, and manageability are discussed in-depth in `SOLUTION.md` file.
 
 
 ## Reference Links:
