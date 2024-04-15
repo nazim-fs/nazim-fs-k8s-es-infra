@@ -11,6 +11,6 @@ spec:
     command:
       - "/bin/sh"
       - "-c"
-      - "apk update && apk add curl && sleep 3600"
+      - "apk update && apk add curl && sleep infinity"
   restartPolicy: Never
 
